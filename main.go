@@ -93,6 +93,14 @@ func deleteUser(id int) {
 	}
 }
 
+func banUser(id int) {
+	setStatus(id, -404)
+}
+
+func unbanUser(id int) {
+	setStatus(id, -1)
+}
+
 func addMessage(id, user_id, message_id int) {
 	query := "INSERT INTO messages (id, user_id, message_id) VALUES (?, ?, ?)"
 	_, err := DB.Exec(query, id, user_id, message_id)
@@ -226,7 +234,8 @@ func addInNewGroup(update tgbotapi.Update) {
 		/get_parameter [string parameter_name] [string delimeter] - получить список этого параметра всех пользователей с разделителем
 		/add_admin [int id] - добавить админа
 		/delete_user [int id] - удалить пользователя
-		/add_question [string question] [string parameter]`)
+		/add_question [string question] [string parameter]
+		/ban_user [string question] [string parameter]`)
 		addGroupID(int(update.Message.Chat.ID))
 	} else {
 		detectYoungHacker(update)
@@ -312,7 +321,7 @@ func addQuestion(question, parameter string) {
 		catchError(err)
 		return
 	}
-	
+
 	question_id := getCountQuestions()
 	query = "INSERT INTO questions (id, question, parameter) VALUES (?, ?, ?)"
 	_, err = DB.Exec(query, question_id, question, parameter)
@@ -335,12 +344,14 @@ func main() {
 	DB, err = sql.Open("sqlite3", "database.db")
 	if err != nil {
 		log.Panic(err)
+		return
 	}
 	defer DB.Close()
 
 	bot, err = tgbotapi.NewBotAPI("7058189590:AAGYget5ZdB33p6Ve_hNYV6PysZeokLVpAg")
 	if err != nil {
 		log.Panic(err)
+		return
 	}
 	bot.Debug = true
 
@@ -352,6 +363,7 @@ func main() {
 	updates, err := bot.GetUpdatesChan(u)
 	if err != nil {
 		log.Panic(err)
+		return
 	}
 
 	for update := range updates {
@@ -446,10 +458,40 @@ func main() {
 					} else {
 						detectYoungHacker(update)
 					}
+				case "ban_user":
+					if flag {
+						argument := update.Message.CommandArguments()
+						id, err := strconv.Atoi(argument)
+						if err != nil {
+							catchError(err)
+						} else {
+							banUser(id)
+							sendMessage(int(update.Message.Chat.ID), "Пользователь с ID "+argument+" успешно забанен")
+						}
+						sendMessage(int(update.Message.Chat.ID), "Запрос обработан")
+					} else {
+						detectYoungHacker(update)
+					}
+				case "unban_user":
+					if flag {
+						argument := update.Message.CommandArguments()
+						id, err := strconv.Atoi(argument)
+						if err != nil {
+							catchError(err)
+						} else {
+							unbanUser(id)
+							sendMessage(int(update.Message.Chat.ID), "Пользователь с ID "+argument+" успешно восстановлен в правах")
+						}
+						sendMessage(int(update.Message.Chat.ID), "Запрос обработан")
+					} else {
+						detectYoungHacker(update)
+					}
 				}
 			} else if update.Message.Chat.Type == "private" {
 				status := getStatus(update.Message.From.ID)
-				if status == -2 {
+				if status == -404 {
+					sendMessage(update.Message.From.ID, "Вы были заблокированы, обратитесь к админу для разблокировки")
+				} else if status == -2 {
 					sendMessage(update.Message.From.ID, "Зарегистрируйтесь с помощью /start перед использованием")
 				} else if status == -1 {
 					ids := getGroupIDs()
