@@ -183,8 +183,7 @@ func getUsersParameter(parameter string, delimeter string) string {
 	for rows.Next() {
 		var val string
 		if err := rows.Scan(&val); err != nil {
-			catchError(err)
-			return ""
+			continue
 		}
 		values = append(values, val)
 	}
@@ -348,7 +347,7 @@ func main() {
 	}
 	defer DB.Close()
 
-	bot, err = tgbotapi.NewBotAPI("7058189590:AAGYget5ZdB33p6Ve_hNYV6PysZeokLVpAg")
+	bot, err = tgbotapi.NewBotAPI("7031978149:AAEgExfnWUmJDJyydevedkA3Vr_-THRQ-P8")
 	if err != nil {
 		log.Panic(err)
 		return
@@ -529,11 +528,62 @@ func main() {
 				if update.Message.ReplyToMessage != nil {
 					user_id, message_id := getMessage(update.Message.ReplyToMessage.MessageID)
 					if user_id != -2 {
-						msg := tgbotapi.NewMessage(int64(user_id), update.Message.Text)
-						msg.ReplyToMessageID = message_id
-						_, err = bot.Send(msg)
-						if err != nil {
-							catchError(err)
+						if update.Message.Text != "" {
+							msg := tgbotapi.NewMessage(int64(user_id), update.Message.Text)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Photo != nil {
+							msg := tgbotapi.NewPhotoUpload(int64(user_id), update.Message.Photo)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Document != nil {
+							msg := tgbotapi.NewDocumentUpload(int64(user_id), update.Message.Document)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Sticker != nil {
+							msg := tgbotapi.NewStickerUpload(int64(user_id), update.Message.Sticker)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Audio != nil {
+							msg := tgbotapi.NewAudioUpload(int64(user_id), update.Message.Audio)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Voice != nil {
+							msg := tgbotapi.NewVoiceUpload(int64(user_id), update.Message.Voice)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Video != nil {
+							msg := tgbotapi.NewVideoUpload(int64(user_id), update.Message.Video)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
+						} else if update.Message.Animation != nil {
+							msg := tgbotapi.NewAnimationUpload(int64(user_id), update.Message.Animation)
+							msg.ReplyToMessageID = message_id
+							_, err = bot.Send(msg)
+							if err != nil {
+								catchError(err)
+							}
 						}
 					}
 				}
