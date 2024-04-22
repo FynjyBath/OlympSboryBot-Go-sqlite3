@@ -233,8 +233,8 @@ func addInNewGroup(update tgbotapi.Update) {
 		/get_parameter [string parameter_name] [string delimeter] - получить список этого параметра всех пользователей с разделителем
 		/add_admin [int id] - добавить админа
 		/delete_user [int id] - удалить пользователя
-		/add_question [string question] [string parameter]
-		/ban_user [string question] [string parameter]`)
+		/add_question [string question] [string parameter] - добавить вопрос
+		/ban_user [string question] [string parameter] - забанить пользователя (совсем)`)
 		addGroupID(int(update.Message.Chat.ID))
 	} else {
 		detectYoungHacker(update)
