@@ -15,14 +15,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type User struct {
-	Name        string
-	Codeforces  string
-	Informatics string
-	School      string
-	About       string
-}
-
 var bot tgbot.TGBot
 var DB my_database.DataBaseSites
 var MU sync.Mutex
