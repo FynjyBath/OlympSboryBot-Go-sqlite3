@@ -20,6 +20,31 @@ var DB my_database.DataBaseSites
 var MU sync.Mutex
 var cfg config.Config
 
+func catchError(err error) {
+	ids, _ := DB.GetGroupIDs()
+	pc, _, _, _ := runtime.Caller(1)
+	callerName := runtime.FuncForPC(pc).Name()
+	for _, id := range ids {
+		SendMessage(id, "Произошла ошибка в функции '"+callerName+"':\n"+err.Error())
+	}
+}
+
+func detectYoungHacker(update tgbotapi.Update) {
+	SendMessage(update.Message.From.ID, "По ФЗ-35 гл. 23 за попытку доступа к приватным функциям вы приговариваетесь к бану.")
+	ids, err := DB.GetGroupIDs()
+	if err != nil {
+		catchError(err)
+	}
+	for _, id := range ids {
+		SendMessage(id, "Пользователь с ID "+fmt.Sprint(update.Message.From.ID)+" и ником @"+fmt.Sprint(update.Message.From.UserName)+" попытался использовать функционал, на который у него нет прав:")
+		if update.Message.NewChatMembers == nil && !update.Message.GroupChatCreated {
+			SendForward(id, int(update.Message.Chat.ID), update.Message.MessageID)
+		} else {
+			SendMessage(id, "Добавление в чат.")
+		}
+	}
+}
+
 func SendMessage(id int, text string) int {
 	id, err := bot.SendMessage(id, text)
 	if err != nil {
@@ -34,15 +59,6 @@ func SendForward(id1, id2, id3 int) int {
 		catchError(err)
 	}
 	return id
-}
-
-func catchError(err error) {
-	ids, _ := DB.GetGroupIDs()
-	pc, _, _, _ := runtime.Caller(1)
-	callerName := runtime.FuncForPC(pc).Name()
-	for _, id := range ids {
-		SendMessage(id, "Произошла ошибка в функции '"+callerName+"':\n"+err.Error())
-	}
 }
 
 func addInNewGroup(update tgbotapi.Update) {
@@ -71,22 +87,6 @@ func addInNewGroup(update tgbotapi.Update) {
 		_, err = bot.Bot.LeaveChat(leaveChatConfig)
 		if err != nil {
 			catchError(err)
-		}
-	}
-}
-
-func detectYoungHacker(update tgbotapi.Update) {
-	SendMessage(update.Message.From.ID, "По ФЗ-35 гл. 23 за попытку доступа к приватным функциям вы приговариваетесь к бану.")
-	ids, err := DB.GetGroupIDs()
-	if err != nil {
-		catchError(err)
-	}
-	for _, id := range ids {
-		SendMessage(id, "Пользователь с ID "+fmt.Sprint(update.Message.From.ID)+" и ником @"+fmt.Sprint(update.Message.From.UserName)+" попытался использовать функционал, на который у него нет прав:")
-		if update.Message.NewChatMembers == nil && !update.Message.GroupChatCreated {
-			SendForward(id, int(update.Message.Chat.ID), update.Message.MessageID)
-		} else {
-			SendMessage(id, "Добавление в чат.")
 		}
 	}
 }
