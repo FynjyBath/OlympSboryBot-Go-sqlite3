@@ -34,3 +34,13 @@ func (bot *TGBot) SendForward(id1, id2, id3 int) (int, error) {
 	}
 	return msg.MessageID, nil
 }
+
+func (bot *TGBot) PinChatMessage(chatID int64, messageID int) error {
+	pinConfig := tgbotapi.PinChatMessageConfig{
+		ChatID:              chatID,
+		MessageID:           messageID,
+		DisableNotification: false,
+	}
+	_, err := bot.Bot.PinChatMessage(pinConfig)
+	return err
+}
